@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>LogShield - Investigation</title>
+
+    <style>
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+        }
+
+        .header {
+            background: #020617;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #38bdf8;
+            margin: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+
+        .back {
+            display: inline-block;
+            background: #0284c7;
+            color: white;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+        }
+
+        .section {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .section h2 {
+            color: #38bdf8;
+        }
+
+        .ip {
+            font-size: 30px;
+            font-weight: bold;
+            color: #facc15;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: #020617;
+            padding: 25px;
+            text-align: center;
+            border-radius: 10px;
+        }
+
+        .card h3 {
+            color: #94a3b8;
+        }
+
+        .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .alert {
+            background: #020617;
+            padding: 20px;
+            margin-top: 15px;
+            border-left: 5px solid #ef4444;
+            border-radius: 5px;
+        }
+
+        .critical {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .high {
+            color: #facc15;
+            font-weight: bold;
+        }
+
+        .medium {
+            color: #fb923c;
+            font-weight: bold;
+        }
+
+        .normal {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #020617;
+            color: #38bdf8;
+            padding: 12px;
+            text-align: left;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .message {
+            color: #94a3b8;
+        }
+
+        @media (max-width: 700px) {
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="header">
+
+        <h1>🛡️ LogShield</h1>
+
+        <p>Security Investigation</p>
+
+    </div>
+
+
+    <div class="container">
+
+
+        <!-- BACK -->
+
+        <a href="/" class="back">
+            ← Back to Dashboard
+        </a>
+
+
+        <!-- IP -->
+
+        <div class="section">
+
+            <h2>🔎 Investigating IP Address</h2>
+
+            <div class="ip">
+                {{ ip }}
+            </div>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+
+        <div class="cards">
+
+
+            <div class="card">
+
+                <h3>Total Activity</h3>
+
+                <div class="number">
+                    {{ total_activity }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Failed Logins</h3>
+
+                <div class="number">
+                    {{ failed_logins }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Denied File Access</h3>
+
+                <div class="number">
+                    {{ denied_access }}
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- THREATS -->
+
+        <div class="section">
+
+            <h2>🚨 Detected Threats</h2>
+
+
+            {% if alerts %}
+
+                {% for alert in alerts %}
+
+                <div class="alert">
+
+                    <h3>
+                        {{ alert.threat }}
+                    </h3>
+
+                    <p>
+                        <strong>Risk Score:</strong>
+                        {{ alert.risk_score }}/100
+                    </p>
+
+                    <p>
+
+                        <strong>Risk Level:</strong>
+
+                        {% if alert.risk_level == "CRITICAL" %}
+
+                            <span class="critical">
+                                CRITICAL
+                            </span>
+
+                        {% elif alert.risk_level == "HIGH" %}
+
+                            <span class="high">
+                                HIGH
+                            </span>
+
+                        {% elif alert.risk_level == "MEDIUM" %}
+
+                            <span class="medium">
+                                MEDIUM
+                            </span>
+
+                        {% else %}
+
+                            <span class="normal">
+                                LOW
+                            </span>
+
+                        {% endif %}
+
+                    </p>
+
+                    <p>
+                        <strong>Evidence:</strong>
+                        {{ alert.evidence }}
+                    </p>
+
+                    <p>
+                        <strong>Recommended Action:</strong>
+                        {{ alert.recommendation }}
+                    </p>
+
+                </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <p class="message">
+                    No alert was generated for this IP.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- LOGS -->
+
+        <div class="section">
+            <!-- ================= THREAT SUMMARY ================= -->
+
+<div class="threat-summary">
+
+    <h2>🔍 Investigation Report</h2>
+
+    <div class="summary-grid">
+
+        <div class="summary-item">
+            <span>IP Address</span>
+            <strong>{{ ip }}</strong>
+        </div>
+
+        <div class="summary-item">
+            <span>Total Activity</span>
+            <strong>{{ total_activity }}</strong>
+        </div>
+
+        <div class="summary-item">
+            <span>Failed Logins</span>
+            <strong>{{ failed_logins }}</strong>
+        </div>
+
+        <div class="summary-item">
+            <span>Denied Access</span>
+            <strong>{{ denied_access }}</strong>
+        </div>
+
+    </div>
+
+    {% if alerts %}
+
+        {% for alert in alerts %}
+
+        <div class="threat-alert">
+
+            <div>
+                <span class="label">Threat</span>
+                <strong>{{ alert.threat }}</strong>
+            </div>
+
+            <div>
+                <span class="label">Risk Level</span>
+                <strong>{{ alert.risk_level }}</strong>
+            </div>
+
+            <div>
+                <span class="label">Risk Score</span>
+                <strong>{{ alert.risk_score }}/100</strong>
+            </div>
+
+        </div>
+
+        <div class="response-box">
+            <strong>🛡️ Recommended Response</strong>
+            <p>{{ alert.recommendation }}</p>
+        </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+</div>
+            <h2>📋 Related Log Activity</h2>
+
+
+            {% if logs %}
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Timestamp</th>
+                        <th>IP Address</th>
+                        <th>Event</th>
+                        <th>Status</th>
+                        <th>User</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for log in logs %}
+
+                    <tr>
+
+                        <td>
+                            {{ log.timestamp }}
+                        </td>
+
+                        <td>
+                            {{ log.ip }}
+                        </td>
+
+                        <td>
+                            {{ log.event }}
+                        </td>
+
+                        <td>
+                            {{ log.status }}
+                        </td>
+
+                        <td>
+                            {{ log.user }}
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+            {% else %}
+
+            <p class="message">
+                No related logs found.
+            </p>
+
+            {% endif %}
+
+
+        </div>
+
+
+    </div>
+
+
+</body>
+
+</html>

@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>LogShield - Security Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+        }
+
+        /* ================= HEADER ================= */
+
+        .header {
+            background: #020617;
+            padding: 25px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #38bdf8;
+            font-size: 32px;
+        }
+
+        .header p {
+            color: #94a3b8;
+        }
+
+        /* ================= CONTAINER ================= */
+
+        .container {
+            width: 92%;
+            max-width: 1300px;
+            margin: 30px auto;
+        }
+
+        /* ================= UPLOAD ================= */
+
+        .upload-section {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #334155;
+        }
+
+        .upload-section h2 {
+            color: #38bdf8;
+            margin-top: 0;
+        }
+
+        .file-input {
+            padding: 10px;
+            background: #020617;
+            color: white;
+            border-radius: 6px;
+            border: 1px solid #475569;
+        }
+
+        .upload-button {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 11px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .upload-button:hover {
+            background: #0369a1;
+        }
+
+        /* ================= SUMMARY CARDS ================= */
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        .card h3 {
+            color: #94a3b8;
+            margin-top: 0;
+        }
+
+        .number {
+            font-size: 35px;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .critical-number {
+            color: #ef4444;
+        }
+
+        .high-number {
+            color: #facc15;
+        }
+
+        /* ================= AI STATUS ================= */
+
+        .ai-status {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #334155;
+        }
+
+        .ai-status h2 {
+            color: #38bdf8;
+            margin-top: 0;
+        }
+
+        .active {
+            color: #22c55e;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* ================= CHART ================= */
+
+        .chart-section {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #334155;
+        }
+
+        .chart-section h2 {
+            color: #38bdf8;
+        }
+
+        .chart-container {
+            max-width: 500px;
+            height: 350px;
+            margin: auto;
+        }
+
+        /* ================= GENERAL SECTION ================= */
+
+        .section {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid #334155;
+        }
+
+        .section h2 {
+            color: #38bdf8;
+            margin-top: 0;
+        }
+
+        /* ================= TABLE ================= */
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #020617;
+            color: #38bdf8;
+            padding: 14px;
+            text-align: left;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #334155;
+        }
+
+        tr:hover {
+            background: #172033;
+        }
+
+        /* ================= RISK LEVEL ================= */
+
+        .critical {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .high {
+            color: #facc15;
+            font-weight: bold;
+        }
+
+        .medium {
+            color: #fb923c;
+            font-weight: bold;
+        }
+
+        .low {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        /* ================= RISK SCORE ================= */
+
+        .risk-score-container {
+            min-width: 150px;
+        }
+
+        .risk-score-bar {
+            width: 100%;
+            height: 8px;
+            background: #334155;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .risk-score-fill {
+            height: 100%;
+            border-radius: 10px;
+        }
+
+        /* Critical */
+
+        .critical-fill {
+            width: 100%;
+            background: #ef4444;
+        }
+
+        /* High */
+
+        .high-fill {
+            width: 75%;
+            background: #facc15;
+        }
+
+        /* Medium */
+
+        .medium-fill {
+            width: 50%;
+            background: #fb923c;
+        }
+
+        /* Low */
+
+        .low-fill {
+            width: 25%;
+            background: #22c55e;
+        }
+
+
+/* ================= RECOMMENDED RESPONSE ================= */
+
+.recommendation {
+    background: #020617;
+    padding: 10px;
+    border-left: 4px solid #38bdf8;
+    border-radius: 5px;
+    color: #cbd5e1;
+    line-height: 1.4;
+}
+
+
+/* ================= INVESTIGATION BUTTON ================= */
+
+.investigate-button {
+    display: inline-block;
+    background: #0284c7;
+    color: white;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 5px;
+}
+
+.investigate-button:hover {
+    background: #0369a1;
+}
+
+        .investigate-button {
+            display: inline-block;
+            background: #0284c7;
+            color: white;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 5px;
+        }
+
+        .investigate-button:hover {
+            background: #0369a1;
+        }
+
+        /* ================= FOOTER ================= */
+
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #64748b;
+        }
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 900px) {
+
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .upload-button {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="header">
+
+        <h1>🛡️ LogShield</h1>
+
+        <p>
+            AI-Powered Log-Based Intrusion Detection System
+        </p>
+
+    </div>
+
+
+    <div class="container">
+
+
+        <!-- ================= UPLOAD ================= -->
+
+        <div class="upload-section">
+
+            <h2>📂 Upload Security Logs</h2>
+
+            <form
+                action="/upload"
+                method="POST"
+                enctype="multipart/form-data">
+
+                <input
+                    type="file"
+                    name="file"
+                    accept=".csv"
+                    required
+                    class="file-input">
+
+                <button
+                    type="submit"
+                    class="upload-button">
+
+                    Analyze Logs
+
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <!-- ================= SUMMARY ================= -->
+
+        <div class="cards">
+
+
+            <div class="card">
+
+                <h3>Total Logs</h3>
+
+                <div class="number">
+                    {{ total_logs }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Total Alerts</h3>
+
+                <div class="number">
+                    {{ total_alerts }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>High Risk</h3>
+
+                <div class="number high-number">
+                    {{ high_risk }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Critical</h3>
+
+                <div class="number critical-number">
+                    {{ critical }}
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================= AI STATUS ================= -->
+
+        <div class="ai-status">
+
+            <h2>🤖 AI Detection Engine</h2>
+
+            <p>
+
+                Machine Learning Model:
+
+                <span class="active">
+                    ● ACTIVE
+                </span>
+
+            </p>
+
+            <p>
+
+                Detection Algorithm:
+
+                <strong>
+                    Isolation Forest
+                </strong>
+
+            </p>
+
+            <p>
+
+                Purpose:
+
+                Detect unusual activity patterns
+                that may indicate security threats.
+
+            </p>
+
+        </div>
+
+
+        <!-- ================= CHART ================= -->
+
+        <div class="chart-section">
+
+            <h2>📊 Risk Distribution</h2>
+
+            <div class="chart-container">
+
+                <canvas id="riskChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= SECURITY ALERTS ================= -->
+
+        <div class="section">
+
+            <h2>🚨 Security Alerts</h2>
+
+
+            {% if alerts %}
+
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            IP Address
+                        </th>
+
+                        <th>
+                            Threat
+                        </th>
+
+                        <th>
+                            Risk Score
+                        </th>
+
+                        <th>
+                            Risk Level
+                        </th>
+
+                        <th>
+                            Evidence
+                        </th>
+
+                        <th> Recommended Response</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    {% for alert in alerts %}
+
+
+                    <tr>
+
+
+                        <td>
+                            {{ alert.ip }}
+                        </td>
+
+
+                        <td>
+                            {{ alert.threat }}
+                        </td>
+
+
+                        <!-- RISK SCORE -->
+
+                        <td>
+
+                            <div class="risk-score-container">
+
+                                <div class="risk-score-bar">
+
+
+                                    {% if alert.risk_level == "CRITICAL" %}
+
+                                    <div class="risk-score-fill critical-fill"></div>
+
+
+                                    {% elif alert.risk_level == "HIGH" %}
+
+                                    <div class="risk-score-fill high-fill"></div>
+
+
+                                    {% elif alert.risk_level == "MEDIUM" %}
+
+                                    <div class="risk-score-fill medium-fill"></div>
+
+
+                                    {% else %}
+
+                                    <div class="risk-score-fill low-fill"></div>
+
+
+                                    {% endif %}
+
+
+                                </div>
+
+
+                                <strong>
+
+                                    {{ alert.risk_score }}/100
+
+                                </strong>
+
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- RISK LEVEL -->
+
+                        <td>
+
+
+                            {% if alert.risk_level == "CRITICAL" %}
+
+                            <span class="critical">
+                                CRITICAL
+                            </span>
+
+
+                            {% elif alert.risk_level == "HIGH" %}
+
+                            <span class="high">
+                                HIGH
+                            </span>
+
+
+                            {% elif alert.risk_level == "MEDIUM" %}
+
+                            <span class="medium">
+                                MEDIUM
+                            </span>
+
+
+                            {% else %}
+
+                            <span class="low">
+                                LOW
+                            </span>
+
+
+                            {% endif %}
+
+
+                        </td>
+
+
+                        <!-- EVIDENCE -->
+
+                        <td>
+
+                        {{ alert.evidence }}
+
+                        </td>
+
+                        <td>
+
+                        <div class="recommendation">
+
+                        🛡️ {{ alert.recommendation }}
+
+                        </div>
+
+                        </td>
+
+
+                    </tr>
+
+
+                    {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+
+            {% else %}
+
+
+            <p>
+                No security threats detected.
+            </p>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+        <!-- ================= INVESTIGATION ================= -->
+
+        <div class="section">
+
+            <h2>🔎 Investigation Center</h2>
+
+
+            {% if investigations %}
+
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            IP Address
+                        </th>
+
+                        <th>
+                            Failed Logins
+                        </th>
+
+                        <th>
+                            Denied Access
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    {% for item in investigations %}
+
+
+                    <tr>
+
+
+                        <td>
+                            {{ item.ip }}
+                        </td>
+
+
+                        <td>
+                            {{ item.failed_logins }}
+                        </td>
+
+
+                        <td>
+                            {{ item.denied_access }}
+                        </td>
+
+
+                        <td>
+                        <a
+                            href="{{ url_for('investigate', ip=item.ip) }}"
+                            class="investigate-button">
+
+                            🔍 Investigate
+
+                        </a>
+                        </td>
+
+
+                    </tr>
+
+
+                    {% endfor %}
+
+
+                </tbody>
+
+            </table>
+
+
+            {% else %}
+
+
+            <p>
+                No suspicious IP addresses found.
+            </p>
+
+
+            {% endif %}
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <div class="footer">
+
+        LogShield © 2026 |
+        AI-Based Security Log Analysis
+
+    </div>
+
+
+    <!-- ================= RISK DATA ================= -->
+
+    <div
+        id="riskData"
+        data-critical="{{ critical }}"
+        data-high="{{ high_risk }}"
+        data-medium="{{ medium_risk }}"
+        data-low="{{ low_risk }}"
+        hidden>
+
+    </div>
+
+
+    <!-- ================= CHART JAVASCRIPT ================= -->
+
+    <script>
+
+        const riskElement =
+            document.getElementById("riskData");
+
+
+        const critical =
+            Number(
+                riskElement.dataset.critical
+            );
+
+
+        const high =
+            Number(
+                riskElement.dataset.high
+            );
+
+
+        const medium =
+            Number(
+                riskElement.dataset.medium
+            );
+
+
+        const low =
+            Number(
+                riskElement.dataset.low
+            );
+
+
+        const riskData = [
+            critical,
+            high,
+            medium,
+            low
+        ];
+
+
+        const chartCanvas =
+            document.getElementById("riskChart");
+
+
+        new Chart(
+            chartCanvas,
+            {
+
+                type: "doughnut",
+
+                data: {
+
+                    labels: [
+                        "Critical",
+                        "High",
+                        "Medium",
+                        "Low"
+                    ],
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "Risk Distribution",
+
+                            data:
+                                riskData,
+
+                            borderWidth:
+                                1
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    plugins: {
+
+                        legend: {
+
+                            position:
+                                "bottom"
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+    </script>
+
+
+</body>
+
+</html>
